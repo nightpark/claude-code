@@ -1,0 +1,40 @@
+name: Daily Run Main
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  run-main:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run main.py
+        run: python main.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "test"
+          git config user.email "test@example.com"
+
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "chore: update extracted bundle"
+            git push origin HEAD:master
+          else
+            echo "No changes to commit"
+          fi
